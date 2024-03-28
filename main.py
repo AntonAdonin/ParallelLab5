@@ -7,8 +7,8 @@ model = YOLO('yolov8s-pose.pt')  # load an official model
 # Predict with the model
 results = model('short.mov')  # predict on an image
 print(results)
-results[0].show()
-
+plot = results[0].plot()
+(plot)
 
 # def video_pose(filename, out_filename):
 #     # Open the input video file and extract its properties

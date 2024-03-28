@@ -1,39 +1,70 @@
+import logging
+import sys
+from multiprocessing import Pool, TimeoutError
+import time
+import os
+
 import cv2
-from ultralytics import YOLO
 
-# Load a model
-model = YOLO('yolov8s-pose.pt')  # load an official model
 
-# Predict with the model
-results = model('short.mov')  # predict on an image
-print(results)
-plot = results[0].plot()
-(plot)
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(funcName)s: %(lineno)d - %(message)s",
+                    handlers=[
+                        logging.FileHandler("file.log", encoding="utf-8"),
+                        logging.StreamHandler(sys.stdout)
+                    ])
 
-# def video_pose(filename, out_filename):
-#     # Open the input video file and extract its properties
-#     cap = cv2.VideoCapture(filename)
-#     fps = cap.get(cv2.CAP_PROP_FPS)
-#     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-#     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-#     fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-#     # Create VideoWriter object
-#     out = cv2.VideoWriter(out_filename, fourcc, fps, (width, height))
-#     #  Processing a video file frame by frame
-#     while cap.isOpened():
-#         ret, frame = cap.read()
-#         if ret:
-#             pred = make_pose_prediction(model, frame)
-#             plot_pose_prediction(frame, pred, show_bbox=False)
-#             out.write(frame)
-#             cv2.imshow('Pose estimation', frame)
-#         else:
-#             break
-#
-#         if cv2.waitKey(10) & 0xFF == ord('q'):
-#             break
-#     # Release VideoCapture and VideoWriter
-#     cap.release()
-#     out.release()
-#     # Close all frames and video windows
-#     cv2.destroyAllWindows()
+logger = logging.getLogger(__name__)
+
+class MyVideoReader:
+    def __init__(self, filename):
+        self.cap = cv2.VideoCapture(filename)
+        self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.fps = self.cap.get(cv2.CAP_PROP_FPS)
+
+    def __iter__(self):
+        while self.cap.isOpened():
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                break
+            ret, frame = self.cap.read()
+            if not ret:
+                logger.error("Can't receive frame (stream end?). Exiting ...")
+                break
+            yield frame
+
+    def __del__(self):
+        self.cap.release()
+
+class MyVideoWriter:
+    def __init__(self, filename, fps, width, height):
+        fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+        self.width = width
+        self.height = height
+        self.fps = fps
+        self.out = cv2.VideoWriter(filename, fourcc, fps, (width, height))
+
+    def write(self, frame):
+        self.out.write(frame)
+
+    def __del__(self):
+        self.out.release()
+
+
+def process_frame(frame):
+    # some intensive computation...
+    frame = cv2.medianBlur(frame, 19)
+    frame = cv2.medianBlur(frame, 19)
+    return frame
+
+if __name__ == '__main__':
+    # start 4 worker processes
+    reader = MyVideoReader("short.mov")
+    # for i in reader:
+    #     print(i)
+    with Pool(processes=4) as pool:
+        res = pool.map(process_frame, iter(reader))
+        print(res)
+
+    writer = MyVideoWriter("out.mov", reader.fps, reader.width, reader.height)
+    for frame in res:
+        writer.write(frame)

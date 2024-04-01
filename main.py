@@ -4,9 +4,9 @@ import multiprocessing
 import sys
 import time
 from multiprocessing import Pool
-import ffmpeg
 
 import cv2
+import ffmpeg
 from ultralytics import YOLO
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(funcName)s: %(lineno)d - %(message)s",
@@ -18,30 +18,41 @@ logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %
 logger = logging.getLogger(__name__)
 
 
-class MyVideoReader:
-    def __init__(self, filename, frame_n):
+class VideoInfoReader:
+    def __init__(self, filename):
         self.cap = cv2.VideoCapture(filename)
-        self.cap.set(cv2.CAP_PROP_POS_FRAMES, frame_n - 1)
         self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.fps = self.cap.get(cv2.CAP_PROP_FPS)
         self.total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
+    def __del__(self):
+        self.cap.release()
+
+
+class VideoFrameReader:
+    def __init__(self, filename, left_frame, right_frame):
+        self.left_frame = left_frame
+        self.right_frame = right_frame
+        self.cap = cv2.VideoCapture(filename)
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, left_frame)
+
     def __iter__(self):
-        while self.cap.isOpened():
+        while self.cap.isOpened() and self.left_frame < self.right_frame:
             if cv2.waitKey(25) & 0xFF == ord('q'):
                 break
             ret, frame = self.cap.read()
+            self.left_frame += 1
             if not ret:
                 logger.error("Can't receive frame (stream end?). Exiting ...")
                 break
-            yield frame
+            yield ret, frame
 
     def __del__(self):
         self.cap.release()
 
 
-class MyVideoWriter:
+class VideoFrameWriter:
     def __init__(self, filename, fps, width, height):
         fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
         self.width = width
@@ -67,47 +78,30 @@ def process_video_multiprocessing(filename, group_number, total_groups):
     print(filename, group_number)
     model = YOLO('yolov8s-pose.pt')
     cap = cv2.VideoCapture(filename)
-
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     frames_per_process = total_frames // total_groups
-    print(total_frames)
     left = frames_per_process * group_number
     right = left + frames_per_process - 1 if group_number != total_groups - 1 else total_frames
+    print(f"start {group_number}: {frames_per_process, left, right}")
 
-    cap.set(cv2.CAP_PROP_POS_FRAMES, left)
-    print(f"start {group_number}: { frames_per_process, left, right}")
-    # Получаем высоту, ширину и количество кадров в видео
-    width, height = (
-        int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
-        int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    )
-    fps = int(cap.get(cv2.CAP_PROP_FPS))
     results = []
-    try:
-        while left < right:
-            ret, frame = cap.read()
-            if not ret:
-                break
-            result = model(frame, verbose=False)
-            results.append(result[0].plot())
-            left += 1
-    except:
-        cap.release()
+    reader = VideoFrameReader(filename, left, right)
+    for ret, frame in reader:
+        if not ret:
+            break
+        result = model(frame, verbose=False)
+        results.append(result[0].plot())
     # Высвобождаем ресурсы
-    print(f"end {group_number}: {right}")
+    print(f"end {group_number}: {reader.left_frame} {reader.right_frame}")
 
-
-    cap.release()
     return results
 
 
 if __name__ == '__main__':
     filename_input = "dima.MOV"
     filename_output = "result.mov"
-    reader = MyVideoReader(filename_input, 0)
-    fps = reader.fps
-    w, h = reader.width, reader.height
     cpu_num = multiprocessing.cpu_count()
+    print("Asd")
     t = time.time()
     with Pool(processes=cpu_num) as pool:
         args = zip(itertools.repeat(filename_input), range(cpu_num), itertools.repeat(cpu_num))
@@ -115,14 +109,16 @@ if __name__ == '__main__':
     t1 = time.time()
     logger.info(f"Frame processed in {t1 - t} s.")
     t = time.time()
-    writer = MyVideoWriter("result.mov", fps, w, h)
+
+    info = VideoInfoReader(filename_input)
+
+    writer = VideoFrameWriter("tmp.mp4", info.fps, info.width, info.height)
     for group in result:
         for frame in group:
             writer.write(frame)
     t1 = time.time()
     logger.info(f"File wrote in {t1 - t} s.")
 
-
-    input_video = ffmpeg.input(filename_output)
+    input_video = ffmpeg.input("tmp.mp4")
     input_audio = ffmpeg.input(filename_input)
-    ffmpeg.concat(input_video, input_audio, v=1, a=1).output("ffmpeg_res.mov").run()
+    ffmpeg.concat(input_video, input_audio, v=1, a=1).output(filename_output).run()

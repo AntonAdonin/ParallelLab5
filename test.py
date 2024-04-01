@@ -1,23 +1,23 @@
 from __future__ import print_function
 
 import time
+from collections import deque
+from multiprocessing.pool import ThreadPool
 
 import cv2
-import numpy as np
 import cv2 as cv
-
-from multiprocessing.pool import ThreadPool
-from collections import deque
-
 
 
 class DummyTask:
     def __init__(self, data):
         self.data = data
+
     def ready(self):
         return True
+
     def get(self):
         return self.data
+
 
 if __name__ == '__main__':
     import sys
@@ -32,14 +32,15 @@ if __name__ == '__main__':
 
 
     def process_frame(frame, t0):
-    # some intensive computation...
+        # some intensive computation...
         frame = cv.medianBlur(frame, 19)
         frame = cv.medianBlur(frame, 19)
         return frame, t0
 
+
     threadn = cv.getNumberOfCPUs()
     print(threadn)
-    pool = ThreadPool(processes = threadn)
+    pool = ThreadPool(processes=threadn)
     pending = deque()
 
     threaded_mode = True

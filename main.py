@@ -70,30 +70,25 @@ class VideoFrameWriter:
     def write(self, frame):
         self.out.write(frame)
 
-    def __del__(self):
+    def close(self):
         self.out.release()
 
-    def close(self):
-        del self
+    def __enter__(self):
+        self.start_time = time.time()
+        return self
 
-
-def process_frame(frame):
-    # some intensive computation...
-    frame = cv2.medianBlur(frame, 19)
-    frame = cv2.medianBlur(frame, 19)
-    return frame
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        logger.info("Finished writing frames in %.2f seconds", time.time() - self.start_time)
 
 
 def process_video_multiprocessing(filename, group_number, total_groups):
-    print(filename, group_number, total_groups)
     model = YOLO('yolov8s-pose.pt')
     cap = cv2.VideoCapture(filename)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     frames_per_process = total_frames // total_groups
     left = frames_per_process * group_number
     right = left + frames_per_process - 1 if group_number != total_groups - 1 else total_frames
-    print(f"start {group_number}: {frames_per_process, left, right}")
-
     results = []
     reader = VideoFrameReader(filename, left, right)
     for ret, frame in reader:
@@ -101,9 +96,6 @@ def process_video_multiprocessing(filename, group_number, total_groups):
             break
         result = model(frame, verbose=False)
         results.append(result[0].plot())
-    # Высвобождаем ресурсы
-    print(f"end {group_number}: {reader.left_frame} {reader.right_frame}")
-
     return results
 
 
@@ -113,14 +105,12 @@ def resize_video_multiprocessing(filename, group_number, total_groups):
     frames_per_process = total_frames // total_groups
     left = frames_per_process * group_number
     right = left + frames_per_process - 1 if group_number != total_groups - 1 else total_frames
-
     results = []
     reader = VideoFrameReader(filename, left, right)
     for ret, frame in reader:
         if not ret:
             break
         results.append(cv2.resize(frame, (640, 480)))
-
     return results
 
 
@@ -130,47 +120,31 @@ if __name__ == '__main__':
     result = []
     tmp_dir = "./tmp/"
     logger.info("Trying to clear tmp directory")
-    # try:
-    #     shutil.rmtree(tmp_dir)
-    #     logger.info("Tmp directory flushed successfully")
-    # except Exception as error:
-    #     logger.exception(f"deleting tmp directory: {error}")
+    try:
+        shutil.rmtree(tmp_dir)
+        logger.info("Tmp directory flushed successfully")
+    except Exception as error:
+        logger.exception(f"deleting tmp directory: {error}")
 
     os.makedirs(tmp_dir, exist_ok=True)
     input = "dima.mp4"
     output = "result.mp4"
     input_copy = copy.copy(input)
-
-    reader = VideoFrameReader("./tmp/RESIZED_dima.mp4")
-    for ret, frame in iter(reader):
-        cv2.imshow("frame", frame)
-        cv2.waitKey(1)
-
-
-
     input_filename = str(Path(input).name)
 
     info = VideoInfoReader(input)
-    if (info.width != 640 or info.height != 480) and True:
+    if (info.width != 640 or info.height != 480):
         t = time.time()
         with Pool(processes=cpu_num) as pool:
             args = zip(itertools.repeat(input), range(cpu_num), itertools.repeat(cpu_num))
             result = pool.starmap(resize_video_multiprocessing, args)
         t1 = time.time()
         logger.info(f"Video resized in {t1 - t} s.")
-
-        t = time.time()
-        input_copy = f"{tmp_dir}RESIZED_{input_filename}"
-        writer = VideoFrameWriter(input_copy, int(info.fps), 640, 480)
-        for group in result:
-            for frame in group:
-                writer.write(frame)
-        t1 = time.time()
-        logger.info(f"Resized File wrote in {t1 - t} s.")
-
-
-
-
+        input_copy = f"./tmp/RESIZED_{input_filename}"
+        with VideoFrameWriter(input_copy, int(info.fps), 640, 480) as writer:
+            for group in result:
+                for frame in group:
+                    writer.write(frame)
 
     t = time.time()
     with Pool(processes=cpu_num) as pool:
@@ -179,16 +153,12 @@ if __name__ == '__main__':
     t1 = time.time()
     logger.info(f"Video processed in {t1 - t} s.")
 
-    t = time.time()
     info = VideoInfoReader(input_copy)
     input_copy = f"{tmp_dir}PREDICTED_{input_filename}"
-    writer = VideoFrameWriter(input_copy, int(info.fps), info.width, info.height)
-    for group in result:
-        for frame in group:
-            writer.write(frame)
-    t1 = time.time()
-    logger.info(f"Resized File wrote in {t1 - t} s.")
-    writer.close()
+    with VideoFrameWriter(input_copy, int(info.fps), info.width, info.height) as writer:
+        for group in result:
+            for frame in group:
+                writer.write(frame)
     input_video = ffmpeg.input(input_copy)
     input_audio = ffmpeg.input(input)
     ffmpeg.concat(input_video, input_audio, v=1, a=1).output(output, loglevel="quiet").run()

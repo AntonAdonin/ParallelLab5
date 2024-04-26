@@ -1,3 +1,4 @@
+import argparse
 import copy
 import itertools
 import logging
@@ -6,7 +7,7 @@ import os
 import shutil
 import sys
 import time
-from multiprocessing import Pool
+from multiprocessing.pool import Pool
 from pathlib import Path
 
 import cv2
@@ -33,6 +34,9 @@ class VideoInfoReader:
     def __del__(self):
         self.cap.release()
 
+    def __repr__(self):
+        return f"fps: {self.fps}, total: {self.total_frames}, width: {self.width}, height: {self.height}"
+
 
 class VideoFrameReader:
     def __init__(self, filename, left_frame=0, right_frame=None):
@@ -53,7 +57,7 @@ class VideoFrameReader:
             if not ret:
                 logger.error("Can't receive frame (stream end?). Exiting ...")
                 break
-            yield ret, cv2.resize(frame, (640, 480))
+            yield ret, frame
 
     def __del__(self):
         self.cap.release()
@@ -84,8 +88,8 @@ class VideoFrameWriter:
 
 def process_video_multiprocessing(filename, group_number, total_groups):
     model = YOLO('yolov8s-pose.pt')
-    cap = cv2.VideoCapture(filename)
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    info_reader = VideoInfoReader(filename)
+    total_frames = info_reader.total_frames
     frames_per_process = total_frames // total_groups
     left = frames_per_process * group_number
     right = left + frames_per_process - 1 if group_number != total_groups - 1 else total_frames
@@ -99,9 +103,23 @@ def process_video_multiprocessing(filename, group_number, total_groups):
     return results
 
 
+def process_video_serial(filename):
+    model = YOLO('yolov8s-pose.pt')
+    info_reader = VideoInfoReader(filename)
+    total_frames = info_reader.total_frames
+    results = []
+    reader = VideoFrameReader(filename, 0, total_frames)
+    for ret, frame in reader:
+        if not ret:
+            break
+        result = model(frame, verbose=False)
+        results.append(result[0].plot())
+    return results
+
+
 def resize_video_multiprocessing(filename, group_number, total_groups):
-    cap = cv2.VideoCapture(filename)
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    info_reader = VideoInfoReader(filename)
+    total_frames = info_reader.total_frames
     frames_per_process = total_frames // total_groups
     left = frames_per_process * group_number
     right = left + frames_per_process - 1 if group_number != total_groups - 1 else total_frames
@@ -115,50 +133,67 @@ def resize_video_multiprocessing(filename, group_number, total_groups):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        prog='Yolov8 pose',
+        description='Program process video with yolov8s-pose in serial or parallel mode',
+        epilog='All parameters are optional')
+    parser.add_argument('-f', '--file', help="??camera name??", default="input.mp4")  # positional argument
+    parser.add_argument('-m', '--mode',
+                        help="singe or multi. defines serial or parallel mode",
+                        default="multi")  # option that takes a value
+    parser.add_argument('-o', '--output', help="output file for result", default='output.mp4')
+    parser.add_argument('-r', '--resize', help="auto resize wideo to 640x480", default=True, type=bool)
+    args = parser.parse_args()
+    logger.debug(f"--file {args.file} --mode {args.mode} --output {args.output} --resize {args.resize}")
     cpu_num = multiprocessing.cpu_count()
     logger.info(f"{cpu_num} CPU cores available")
-    result = []
-    tmp_dir = "./tmp/"
+    logger.info(f"Running in {args.mode.upper()}processing mode")
+
+    processes_results = []
+    tmp_dir = "./tmp"
     logger.info("Trying to clear tmp directory")
     try:
         shutil.rmtree(tmp_dir)
         logger.info("Tmp directory flushed successfully")
     except Exception as error:
         logger.exception(f"deleting tmp directory: {error}")
-
     os.makedirs(tmp_dir, exist_ok=True)
-    input = "dima.mp4"
-    output = "result.mp4"
+    input = args.file
+    output = args.output
     input_copy = copy.copy(input)
     input_filename = str(Path(input).name)
 
     info = VideoInfoReader(input)
-    if (info.width != 640 or info.height != 480):
+    if args.resize:
         t = time.time()
         with Pool(processes=cpu_num) as pool:
-            args = zip(itertools.repeat(input), range(cpu_num), itertools.repeat(cpu_num))
-            result = pool.starmap(resize_video_multiprocessing, args)
+            func_args = zip(itertools.repeat(input), range(cpu_num), itertools.repeat(cpu_num))
+            processes_results = pool.starmap(resize_video_multiprocessing, func_args)
         t1 = time.time()
         logger.info(f"Video resized in {t1 - t} s.")
-        input_copy = f"./tmp/RESIZED_{input_filename}"
+        input_copy = f"{tmp_dir}/RESIZED_{input_filename}"
         with VideoFrameWriter(input_copy, int(info.fps), 640, 480) as writer:
-            for group in result:
+            for group in processes_results:
                 for frame in group:
                     writer.write(frame)
 
     t = time.time()
-    with Pool(processes=cpu_num) as pool:
-        args = zip(itertools.repeat(input_copy), range(cpu_num), itertools.repeat(cpu_num))
-        result = pool.starmap(process_video_multiprocessing, args)
+    if args.mode == "multi":
+        with Pool(processes=cpu_num) as pool:
+            processes_results = pool.starmap(process_video_multiprocessing,
+                                             zip(itertools.repeat(input_copy), range(cpu_num),
+                                                 itertools.repeat(cpu_num)))
+    else:
+        process_video_serial(input_copy)
     t1 = time.time()
     logger.info(f"Video processed in {t1 - t} s.")
 
     info = VideoInfoReader(input_copy)
-    input_copy = f"{tmp_dir}PREDICTED_{input_filename}"
+    input_copy = f"{tmp_dir}/PREDICTED_{input_filename}"
     with VideoFrameWriter(input_copy, int(info.fps), info.width, info.height) as writer:
-        for group in result:
+        for group in processes_results:
             for frame in group:
                 writer.write(frame)
     input_video = ffmpeg.input(input_copy)
     input_audio = ffmpeg.input(input)
-    ffmpeg.concat(input_video, input_audio, v=1, a=1).output(output, loglevel="quiet").run()
+    ffmpeg.concat(input_video, input_audio, v=1, a=1).output(output, loglevel="quiet").overwrite_output().run()

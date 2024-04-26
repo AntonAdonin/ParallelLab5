@@ -1,0 +1,134 @@
+2024-04-26 14:51:28,665 - DEBUG - <module>: 129 - --file None --mode None --output None --resize None
+2024-04-26 14:51:28,665 - INFO - <module>: 131 - 8 CPU cores available
+2024-04-26 14:51:28,665 - INFO - <module>: 134 - Trying to clear tmp directory
+2024-04-26 14:51:28,668 - INFO - <module>: 137 - Tmp directory flushed successfully
+2024-04-26 14:52:05,879 - DEBUG - <module>: 129 - --file None --mode None --output None --resize None
+2024-04-26 14:53:11,478 - DEBUG - <module>: 129 - --file input.mp4 --mode multi --output output.mp4 --resize True
+2024-04-26 14:55:10,953 - DEBUG - <module>: 130 - --file input.mp4 --mode multi --output output.mp4 --resize True
+2024-04-26 14:55:10,953 - INFO - <module>: 132 - 8 CPU cores available
+2024-04-26 14:55:10,953 - INFO - <module>: 135 - Trying to clear tmp directory
+2024-04-26 14:55:10,953 - ERROR - <module>: 140 - deleting tmp directory: [Errno 2] No such file or directory: './tmp'
+Traceback (most recent call last):
+  File "/Users/antonadonin/PycharmProjects/ParallelLab5/main.py", line 137, in <module>
+    shutil.rmtree(tmp_dir)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/shutil.py", line 775, in rmtree
+    onexc(os.lstat, path, err)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/shutil.py", line 773, in rmtree
+    orig_st = os.lstat(path, dir_fd=dir_fd)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './tmp'
+2024-04-26 14:56:25,651 - DEBUG - <module>: 130 - --file input.mp4 --mode multi --output output.mp4 --resize True
+2024-04-26 14:56:25,651 - INFO - <module>: 132 - 8 CPU cores available
+2024-04-26 14:56:25,651 - INFO - <module>: 135 - Trying to clear tmp directory
+2024-04-26 14:56:25,652 - INFO - <module>: 138 - Tmp directory flushed successfully
+2024-04-26 14:56:33,122 - INFO - <module>: 154 - Video resized in 7.446199893951416 s.
+2024-04-26 14:56:34,271 - INFO - __exit__: 83 - Finished writing frames in 1.14 seconds
+2024-04-26 15:06:10,189 - DEBUG - <module>: 144 - --file input.mp4 --mode multi --output output.mp4 --resize True
+2024-04-26 15:06:10,189 - INFO - <module>: 146 - 8 CPU cores available
+2024-04-26 15:06:10,190 - INFO - <module>: 149 - Trying to clear tmp directory
+2024-04-26 15:06:10,190 - INFO - <module>: 152 - Tmp directory flushed successfully
+2024-04-26 15:06:17,783 - INFO - <module>: 168 - Video resized in 7.563556909561157 s.
+2024-04-26 15:06:19,035 - INFO - __exit__: 83 - Finished writing frames in 1.24 seconds
+2024-04-26 15:07:05,319 - DEBUG - <module>: 144 - --file input.mp4 --mode multi --output output.mp4 --resize True
+2024-04-26 15:07:05,319 - INFO - <module>: 146 - 8 CPU cores available
+2024-04-26 15:07:05,319 - INFO - <module>: 147 - Running in MULTI mode
+2024-04-26 15:07:05,319 - INFO - <module>: 151 - Trying to clear tmp directory
+2024-04-26 15:07:05,319 - INFO - <module>: 154 - Tmp directory flushed successfully
+2024-04-26 15:07:12,487 - INFO - <module>: 170 - Video resized in 7.1604530811309814 s.
+2024-04-26 15:07:13,631 - INFO - __exit__: 83 - Finished writing frames in 1.14 seconds
+2024-04-26 15:08:20,210 - INFO - <module>: 186 - Video processed in 66.57844710350037 s.
+2024-04-26 15:08:21,489 - INFO - __exit__: 83 - Finished writing frames in 1.27 seconds
+2024-04-26 15:09:15,169 - DEBUG - <module>: 144 - --file input.mp4 --mode single --output output.mp4 --resize False
+2024-04-26 15:09:15,169 - INFO - <module>: 146 - 8 CPU cores available
+2024-04-26 15:09:15,169 - INFO - <module>: 147 - Running in SINGLEprocessing mode
+2024-04-26 15:09:15,169 - INFO - <module>: 151 - Trying to clear tmp directory
+2024-04-26 15:09:15,170 - INFO - <module>: 154 - Tmp directory flushed successfully
+2024-04-26 15:10:41,838 - INFO - <module>: 186 - Video processed in 86.66096782684326 s.
+2024-04-26 15:10:41,865 - INFO - __exit__: 83 - Finished writing frames in 0.00 seconds
+2024-04-26 15:11:29,881 - DEBUG - <module>: 144 - --file input.mp4 --mode multi --output output.mp4 --resize True
+2024-04-26 15:11:29,881 - INFO - <module>: 146 - 8 CPU cores available
+2024-04-26 15:11:29,881 - INFO - <module>: 147 - Running in MULTIprocessing mode
+2024-04-26 15:11:29,881 - INFO - <module>: 151 - Trying to clear tmp directory
+2024-04-26 15:11:29,881 - INFO - <module>: 154 - Tmp directory flushed successfully
+2024-04-26 15:11:37,071 - INFO - <module>: 170 - Video resized in 7.18212103843689 s.
+2024-04-26 15:11:38,178 - INFO - __exit__: 83 - Finished writing frames in 1.11 seconds
+2024-04-26 15:12:42,096 - INFO - <module>: 186 - Video processed in 63.91665983200073 s.
+2024-04-26 15:12:43,616 - INFO - __exit__: 83 - Finished writing frames in 1.49 seconds
+2024-04-26 15:14:32,761 - DEBUG - <module>: 144 - --file input.mp4 --mode multi --output output.mp4 --resize False
+2024-04-26 15:14:32,762 - INFO - <module>: 146 - 8 CPU cores available
+2024-04-26 15:14:32,762 - INFO - <module>: 147 - Running in MULTIprocessing mode
+2024-04-26 15:14:32,762 - INFO - <module>: 151 - Trying to clear tmp directory
+2024-04-26 15:14:32,763 - INFO - <module>: 154 - Tmp directory flushed successfully
+2024-04-26 15:17:16,097 - INFO - <module>: 186 - Video processed in 163.30768990516663 s.
+2024-04-26 15:17:48,643 - INFO - __exit__: 83 - Finished writing frames in 32.46 seconds
+2024-04-26 15:23:51,265 - DEBUG - <module>: 144 - --file input.mp4 --mode multi --output output.mp4 --resize True
+2024-04-26 15:23:51,266 - INFO - <module>: 146 - 8 CPU cores available
+2024-04-26 15:23:51,266 - INFO - <module>: 147 - Running in MULTIprocessing mode
+2024-04-26 15:23:51,266 - INFO - <module>: 151 - Trying to clear tmp directory
+2024-04-26 15:23:51,270 - INFO - <module>: 154 - Tmp directory flushed successfully
+2024-04-26 15:23:56,608 - ERROR - __iter__: 55 - Can't receive frame (stream end?). Exiting ...
+2024-04-26 15:23:56,783 - INFO - <module>: 170 - Video resized in 5.48728609085083 s.
+2024-04-26 15:23:57,520 - INFO - __exit__: 83 - Finished writing frames in 0.73 seconds
+2024-04-26 15:25:04,951 - DEBUG - <module>: 144 - --file input.mp4 --mode multi --output output.mp4 --resize True
+2024-04-26 15:25:04,951 - INFO - <module>: 146 - 8 CPU cores available
+2024-04-26 15:25:04,951 - INFO - <module>: 147 - Running in MULTIprocessing mode
+2024-04-26 15:25:04,951 - INFO - <module>: 151 - Trying to clear tmp directory
+2024-04-26 15:25:04,952 - INFO - <module>: 154 - Tmp directory flushed successfully
+2024-04-26 15:25:10,257 - ERROR - __iter__: 55 - Can't receive frame (stream end?). Exiting ...
+2024-04-26 15:25:10,456 - INFO - <module>: 170 - Video resized in 5.498008966445923 s.
+2024-04-26 15:25:11,186 - INFO - __exit__: 83 - Finished writing frames in 0.73 seconds
+2024-04-26 15:25:54,929 - INFO - <module>: 186 - Video processed in 43.74218988418579 s.
+2024-04-26 15:25:55,822 - INFO - __exit__: 83 - Finished writing frames in 0.88 seconds
+2024-04-26 15:33:19,222 - DEBUG - <module>: 150 - --file input.mp4 --mode multi --output output.mp4 --resize True
+2024-04-26 15:33:19,223 - INFO - <module>: 152 - 8 CPU cores available
+2024-04-26 15:33:19,223 - INFO - <module>: 153 - Running in MULTIprocessing mode
+2024-04-26 15:33:19,223 - INFO - <module>: 157 - Trying to clear tmp directory
+2024-04-26 15:33:19,225 - INFO - <module>: 160 - Tmp directory flushed successfully
+2024-04-26 15:33:56,186 - DEBUG - <module>: 150 - --file input.mp4 --mode multi --output output.mp4 --resize True
+2024-04-26 15:33:56,186 - INFO - <module>: 152 - 8 CPU cores available
+2024-04-26 15:33:56,186 - INFO - <module>: 153 - Running in MULTIprocessing mode
+2024-04-26 15:33:56,186 - INFO - <module>: 157 - Trying to clear tmp directory
+2024-04-26 15:33:56,186 - INFO - <module>: 160 - Tmp directory flushed successfully
+2024-04-26 15:34:01,529 - ERROR - __iter__: 58 - Can't receive frame (stream end?). Exiting ...
+2024-04-26 15:34:02,008 - INFO - <module>: 176 - Video resized in 5.814866304397583 s.
+2024-04-26 15:34:02,747 - INFO - __exit__: 86 - Finished writing frames in 0.73 seconds
+2024-04-26 15:34:46,170 - INFO - <module>: 192 - Video processed in 43.421736001968384 s.
+2024-04-26 15:34:47,023 - INFO - __exit__: 86 - Finished writing frames in 0.85 seconds
+2024-04-26 15:34:51,098 - DEBUG - <module>: 150 - --file input.mp4 --mode multi --output output.mp4 --resize True
+2024-04-26 15:34:51,098 - INFO - <module>: 152 - 8 CPU cores available
+2024-04-26 15:34:51,098 - INFO - <module>: 153 - Running in MULTIprocessing mode
+2024-04-26 15:34:51,098 - INFO - <module>: 157 - Trying to clear tmp directory
+2024-04-26 15:34:51,100 - INFO - <module>: 160 - Tmp directory flushed successfully
+2024-04-26 15:34:56,394 - ERROR - __iter__: 58 - Can't receive frame (stream end?). Exiting ...
+2024-04-26 15:34:56,679 - INFO - <module>: 176 - Video resized in 5.572522163391113 s.
+2024-04-26 15:34:57,395 - INFO - __exit__: 86 - Finished writing frames in 0.71 seconds
+2024-04-26 15:35:44,420 - INFO - <module>: 192 - Video processed in 47.024008989334106 s.
+2024-04-26 15:35:45,316 - INFO - __exit__: 86 - Finished writing frames in 0.89 seconds
+2024-04-26 15:36:02,253 - DEBUG - <module>: 150 - --file input.mp4 --mode multi --output output.mp4 --resize True
+2024-04-26 15:36:02,253 - INFO - <module>: 152 - 8 CPU cores available
+2024-04-26 15:36:02,253 - INFO - <module>: 153 - Running in MULTIprocessing mode
+2024-04-26 15:36:02,253 - INFO - <module>: 157 - Trying to clear tmp directory
+2024-04-26 15:36:02,253 - INFO - <module>: 160 - Tmp directory flushed successfully
+2024-04-26 15:36:07,386 - ERROR - __iter__: 58 - Can't receive frame (stream end?). Exiting ...
+2024-04-26 15:36:07,701 - INFO - <module>: 176 - Video resized in 5.441370725631714 s.
+2024-04-26 15:36:08,429 - INFO - __exit__: 86 - Finished writing frames in 0.73 seconds
+2024-04-26 15:36:52,850 - INFO - <module>: 192 - Video processed in 44.42059016227722 s.
+2024-04-26 15:36:53,768 - INFO - __exit__: 86 - Finished writing frames in 0.91 seconds
+2024-04-26 15:45:03,773 - DEBUG - <module>: 148 - --file input.mp4 --mode multi --output output.mp4 --resize True
+2024-04-26 15:45:03,773 - INFO - <module>: 150 - 8 CPU cores available
+2024-04-26 15:45:03,773 - INFO - <module>: 151 - Running in MULTIprocessing mode
+2024-04-26 15:45:03,773 - INFO - <module>: 155 - Trying to clear tmp directory
+2024-04-26 15:45:03,775 - INFO - <module>: 158 - Tmp directory flushed successfully
+2024-04-26 15:45:09,289 - ERROR - __iter__: 58 - Can't receive frame (stream end?). Exiting ...
+2024-04-26 15:45:09,683 - INFO - <module>: 174 - Video resized in 5.8827550411224365 s.
+2024-04-26 15:45:10,421 - INFO - __exit__: 86 - Finished writing frames in 0.73 seconds
+2024-04-26 15:49:21,998 - DEBUG - <module>: 147 - --file input.mp4 --mode multi --output output.mp4 --resize True
+2024-04-26 15:49:21,998 - INFO - <module>: 149 - 8 CPU cores available
+2024-04-26 15:49:21,998 - INFO - <module>: 150 - Running in MULTIprocessing mode
+2024-04-26 15:49:21,998 - INFO - <module>: 154 - Trying to clear tmp directory
+2024-04-26 15:49:21,999 - INFO - <module>: 157 - Tmp directory flushed successfully
+2024-04-26 15:49:27,582 - ERROR - __iter__: 58 - Can't receive frame (stream end?). Exiting ...
+2024-04-26 15:49:27,904 - INFO - <module>: 173 - Video resized in 5.871794939041138 s.
+2024-04-26 15:49:28,656 - INFO - __exit__: 86 - Finished writing frames in 0.75 seconds
+2024-04-26 15:50:11,559 - INFO - <module>: 189 - Video processed in 42.90204191207886 s.
+2024-04-26 15:50:12,400 - INFO - __exit__: 86 - Finished writing frames in 0.84 seconds
